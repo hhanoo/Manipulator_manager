@@ -1,0 +1,12 @@
+.vscode/
+.clang-format
+
+*.*.backup
+*_backup.txt
+*.pro.user
+build/
+config.ini
+
+__pycache__
+
+KETIRobotSDK/
