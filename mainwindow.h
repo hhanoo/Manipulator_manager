@@ -2,9 +2,11 @@
 #define MAINWINDOW_H
 
 #include <Eigen/Dense>
+#include <QFuture>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QTimer>
+#include <QtConcurrent/QtConcurrent>
 #include <array>
 #include <cmath>
 
@@ -37,12 +39,14 @@ class MainWindow : public QMainWindow {
     int      robot_type = UR10;
 
     bool                       is_connected = false;
+    int                        digital_in   = 0;
+    int                        digital_out  = 0;
+    std::atomic<bool>          is_moving    = false;
+    QFuture<void>              move_future;
     std::array<QLineEdit *, 6> current_joint;
-    std::array<QLineEdit *, 6> current_kinematrics;
     std::array<QLineEdit *, 6> target_joint;
-    std::array<QLineEdit *, 6> target_kinematrics;
-    int                        digital_in  = 0;
-    int                        digital_out = 0;
+    std::array<QLineEdit *, 3> current_xyz;
+    std::array<QLineEdit *, 3> target_xyz;
 
     // ---------------------- Main ------------------------------------
     QTimer *mainTimer;
@@ -54,17 +58,24 @@ class MainWindow : public QMainWindow {
     // ---------------------- Connect ------------------------------------
     void btnRobotConnect_clicked();
 
-    // ---------------------- Print ------------------------------------
+    // ---------------------- Joint ------------------------------------
     void btn_print_joint_clicked();
-    void btn_print_kinematrics_clicked();
-
-    // ---------------------- Apply ------------------------------------
     void btn_apply_joint_clicked();
-    void btn_apply_kinematrics_clicked();
-
-    // ---------------------- Move ------------------------------------
     void btn_moveJ_clicked();
+
+    // ---------------------- TCP (X, Y, Z) ------------------------------------
+    void btn_print_kinematrics_clicked();
+    void btn_apply_kinematrics_clicked();
     void btn_moveL_clicked();
+
+    // ---------------------- TCP (RX, RY, RZ) ------------------------------------
+    void tcp_rotate(const char *axis, double radians, double result_T[16]);
+    void btn_rx_m_clicked();
+    void btn_rx_p_clicked();
+    void btn_ry_m_clicked();
+    void btn_ry_p_clicked();
+    void btn_rz_m_clicked();
+    void btn_rz_p_clicked();
 
     // ---------------------- Digital I/O ------------------------------------
     void checkBox_DIO_update();

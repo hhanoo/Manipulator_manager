@@ -7,19 +7,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     this->setWindowTitle("Manipulator Operation");
 
+    // Connect
     connect(ui->btnRobotConnect, &QPushButton::clicked, this, &MainWindow::btnRobotConnect_clicked);
+
+    // Joint
     connect(ui->btn_print_joint, &QPushButton::clicked, this, &MainWindow::btn_print_joint_clicked);
-    connect(ui->btn_print_kinematrics, &QPushButton::clicked, this, &MainWindow::btn_print_kinematrics_clicked);
     connect(ui->btn_apply_joint, &QPushButton::clicked, this, &MainWindow::btn_apply_joint_clicked);
-    connect(ui->btn_apply_kinematrics, &QPushButton::clicked, this, &MainWindow::btn_apply_kinematrics_clicked);
     connect(ui->btn_moveJ, &QPushButton::clicked, this, &MainWindow::btn_moveJ_clicked);
+    current_joint = {ui->txt_Joint1, ui->txt_Joint2, ui->txt_Joint3, ui->txt_Joint4, ui->txt_Joint5, ui->txt_Joint6};
+    target_joint  = {ui->lineEdit_Joint1, ui->lineEdit_Joint2, ui->lineEdit_Joint3, ui->lineEdit_Joint4, ui->lineEdit_Joint5, ui->lineEdit_Joint6};
+
+    // TCP (X, Y, Z)
+    connect(ui->btn_print_kinematrics, &QPushButton::clicked, this, &MainWindow::btn_print_kinematrics_clicked);
+    connect(ui->btn_apply_kinematrics, &QPushButton::clicked, this, &MainWindow::btn_apply_kinematrics_clicked);
     connect(ui->btn_moveL, &QPushButton::clicked, this, &MainWindow::btn_moveL_clicked);
+    current_xyz = {ui->txt_X, ui->txt_Y, ui->txt_Z};
+    target_xyz  = {ui->lineEdit_X, ui->lineEdit_Y, ui->lineEdit_Z};
 
-    current_joint       = {ui->txt_Joint1, ui->txt_Joint2, ui->txt_Joint3, ui->txt_Joint4, ui->txt_Joint5, ui->txt_Joint6};
-    current_kinematrics = {ui->txt_X, ui->txt_Y, ui->txt_Z, ui->txt_RX, ui->txt_RY, ui->txt_RZ};
-    target_joint        = {ui->lineEdit_Joint1, ui->lineEdit_Joint2, ui->lineEdit_Joint3, ui->lineEdit_Joint4, ui->lineEdit_Joint5, ui->lineEdit_Joint6};
-    target_kinematrics  = {ui->lineEdit_X, ui->lineEdit_Y, ui->lineEdit_Z, ui->lineEdit_RX, ui->lineEdit_RY, ui->lineEdit_RZ};
+    // TCP (RX, RY, RZ)
+    connect(ui->btn_rx_m, &QPushButton::clicked, this, &MainWindow::btn_rx_m_clicked);
+    connect(ui->btn_rx_p, &QPushButton::clicked, this, &MainWindow::btn_rx_p_clicked);
+    connect(ui->btn_ry_m, &QPushButton::clicked, this, &MainWindow::btn_ry_m_clicked);
+    connect(ui->btn_ry_p, &QPushButton::clicked, this, &MainWindow::btn_ry_p_clicked);
+    connect(ui->btn_rz_m, &QPushButton::clicked, this, &MainWindow::btn_rz_m_clicked);
+    connect(ui->btn_rz_p, &QPushButton::clicked, this, &MainWindow::btn_rz_p_clicked);
 
+    // UI Setting
     setting_config = new SettingConfig(ui);
     setting_config->loadConfigFile();
 
@@ -41,12 +54,35 @@ MainWindow::~MainWindow() {
 
 // ---------------------- Main -----------------------------------
 void MainWindow::statusUpdate() {
+    // Set button enable/disable
+    if (is_connected && !is_moving) {
+        ui->btn_moveJ->setEnabled(true);
+        ui->btn_moveL->setEnabled(true);
+        ui->btn_rx_m->setEnabled(true);
+        ui->btn_rx_p->setEnabled(true);
+        ui->btn_ry_m->setEnabled(true);
+        ui->btn_ry_p->setEnabled(true);
+        ui->btn_rz_m->setEnabled(true);
+        ui->btn_rz_p->setEnabled(true);
+    } else {
+        ui->btn_moveJ->setEnabled(false);
+        ui->btn_moveL->setEnabled(false);
+        ui->btn_rx_m->setEnabled(false);
+        ui->btn_rx_p->setEnabled(false);
+        ui->btn_ry_m->setEnabled(false);
+        ui->btn_ry_p->setEnabled(false);
+        ui->btn_rz_m->setEnabled(false);
+        ui->btn_rz_p->setEnabled(false);
+    }
+
+    // Set button text
     if (is_connected) {
         ui->btnRobotConnect->setText("Disconnect");
     } else {
         ui->btnRobotConnect->setText("Connect");
     }
 
+    // Set robot info
     if (is_connected) {
         robot_info = robot.RobotInfo();
 
@@ -54,9 +90,9 @@ void MainWindow::statusUpdate() {
             current_joint[i]->setText(QString::number(robot_info.jnt[i] * 180. / M_PI, 'f', 2));
         }
 
-        current_kinematrics[0]->setText(QString::number(robot_info.mat[3] * 1000, 'f', 2));
-        current_kinematrics[1]->setText(QString::number(robot_info.mat[7] * 1000, 'f', 2));
-        current_kinematrics[2]->setText(QString::number(robot_info.mat[11] * 1000, 'f', 2));
+        current_xyz[0]->setText(QString::number(robot_info.mat[3] * 1000, 'f', 2));
+        current_xyz[1]->setText(QString::number(robot_info.mat[7] * 1000, 'f', 2));
+        current_xyz[2]->setText(QString::number(robot_info.mat[11] * 1000, 'f', 2));
 
         checkBox_DIO_update();
 
@@ -77,7 +113,7 @@ void MainWindow::btnRobotConnect_clicked() {
     }
 }
 
-// ---------------------- Print ------------------------------------
+// ---------------------- Joint ------------------------------------
 void MainWindow::btn_print_joint_clicked() {
     if (is_connected) {
         printf(
@@ -88,6 +124,32 @@ void MainWindow::btn_print_joint_clicked() {
     }
 }
 
+void MainWindow::btn_apply_joint_clicked() {
+    if (is_connected) {
+        for (int i = 0; i < 6; i++) {
+            target_joint[i]->setText(current_joint[i]->text());
+        }
+    }
+}
+void MainWindow::btn_moveJ_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        std::array<double, 6> target_J;
+        for (int i = 0; i < 6; i++) {
+            target_J[i] = target_joint[i]->text().toDouble() * M_PI / 180.;
+        }
+
+        move_future = QtConcurrent::run([this, target_J]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movej(const_cast<double *>(target_J.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+// ---------------------- TCP (X, Y, Z) ------------------------------------
 void MainWindow::btn_print_kinematrics_clicked() {
     if (is_connected) {
         printf(
@@ -103,47 +165,197 @@ void MainWindow::btn_print_kinematrics_clicked() {
     }
 }
 
-// ---------------------- Apply ------------------------------------
-void MainWindow::btn_apply_joint_clicked() {
-    if (is_connected) {
-        for (int i = 0; i < 6; i++) {
-            target_joint[i]->setText(current_joint[i]->text());
-        }
-    }
-}
-
 void MainWindow::btn_apply_kinematrics_clicked() {
     if (is_connected) {
-        for (int i = 0; i < 6; i++) {
-            target_kinematrics[i]->setText(current_kinematrics[i]->text());
+        for (int i = 0; i < 3; i++) {
+            target_xyz[i]->setText(current_xyz[i]->text());
         }
-    }
-}
-
-// ---------------------- Move ------------------------------------
-void MainWindow::btn_moveJ_clicked() {
-    if (is_connected) {
-        double target_joint_value[6];
-        for (int i = 0; i < 6; i++) {
-            target_joint_value[i] = target_joint[i]->text().toDouble() * M_PI / 180.;
-        }
-        printf("target_joint_value: [%.8f, %.8f, %.8f, %.8f, %.8f, %.8f]\n", target_joint_value[0], target_joint_value[1], target_joint_value[2], target_joint_value[3], target_joint_value[4], target_joint_value[5]);
-        robot.movej(target_joint_value);
-        robot.WaitMove();
     }
 }
 
 void MainWindow::btn_moveL_clicked() {
-    if (is_connected) {
-        double target_kinematrics_value[16];
-        memcpy(target_kinematrics_value, robot_info.mat, sizeof(robot_info.mat));
-        target_kinematrics_value[3]  = target_kinematrics[0]->text().toDouble() / 1000.;
-        target_kinematrics_value[7]  = target_kinematrics[1]->text().toDouble() / 1000.;
-        target_kinematrics_value[11] = target_kinematrics[2]->text().toDouble() / 1000.;
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
 
-        printf("target_kinematrics_value: [%.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f, %.8f]\n", target_kinematrics_value[0], target_kinematrics_value[1], target_kinematrics_value[2], target_kinematrics_value[3], target_kinematrics_value[4], target_kinematrics_value[5], target_kinematrics_value[6], target_kinematrics_value[7], target_kinematrics_value[8], target_kinematrics_value[9], target_kinematrics_value[10], target_kinematrics_value[11], target_kinematrics_value[12], target_kinematrics_value[13], target_kinematrics_value[14], target_kinematrics_value[15]);
-        robot.movel(0, target_kinematrics_value);
-        robot.WaitMove();
+        double target_T[16];
+        memcpy(target_T, robot_info.mat, sizeof(robot_info.mat));
+        target_T[3]  = target_xyz[0]->text().toDouble() / 1000.;
+        target_T[7]  = target_xyz[1]->text().toDouble() / 1000.;
+        target_T[11] = target_xyz[2]->text().toDouble() / 1000.;
+
+        std::array<double, 16> move_T;
+        std::copy(begin(target_T), end(target_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+// ---------------------- TCP (RX, RY, RZ) ------------------------------------
+void MainWindow::tcp_rotate(const char *axis, double radians, double result_T[16]) {
+    double current_T[16];
+    memcpy(current_T, robot_info.mat, sizeof(robot_info.mat));
+
+    // Convert 1D array to Eigen 4x4 row-major matrix
+    Eigen::Map<const Eigen::Matrix<double, 4, 4, Eigen::RowMajor>> current_T_matrix(current_T);
+
+    // Convert 4x4 matrix to affine transformation
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::RowMajor> current_affine(current_T_matrix);
+
+    // Create rotation affine transformation
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::RowMajor> rotation_affine = Eigen::Transform<double, 3, Eigen::Affine, Eigen::RowMajor>::Identity();
+
+    switch (*axis) {
+        case 'X':
+            rotation_affine.rotate(Eigen::AngleAxisd(radians, Eigen::Vector3d::UnitX()));
+            break;
+        case 'Y':
+            rotation_affine.rotate(Eigen::AngleAxisd(radians, Eigen::Vector3d::UnitY()));
+            break;
+        case 'Z':
+            rotation_affine.rotate(Eigen::AngleAxisd(radians, Eigen::Vector3d::UnitZ()));
+            break;
+        default:
+            std::cerr << "Invalid axis: " << axis << std::endl;
+            break;
+    }
+
+    // Apply rotation to target affine transformation
+    Eigen::Transform<double, 3, Eigen::Affine, Eigen::RowMajor> result_affine   = current_affine * rotation_affine;
+    Eigen::Matrix<double, 4, 4, Eigen::RowMajor>                result_T_matrix = result_affine.matrix();
+
+    // Map output_1D as a 4x4 row-major matrix
+    Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>> result_T_matrix_map(result_T);
+    result_T_matrix_map = result_T_matrix;
+}
+
+void MainWindow::btn_rx_m_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        double radians = ui->spinBox_rx->value() * M_PI / 180.0;
+        double result_T[16];
+
+        tcp_rotate("X", -radians, result_T);
+
+        std::array<double, 16> move_T;
+        std::copy(begin(result_T), end(result_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+void MainWindow::btn_rx_p_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        double radians = ui->spinBox_rx->value() * M_PI / 180.0;
+        double result_T[16];
+
+        tcp_rotate("X", radians, result_T);
+
+        std::array<double, 16> move_T;
+        std::copy(begin(result_T), end(result_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+void MainWindow::btn_ry_m_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        double radians = ui->spinBox_ry->value() * M_PI / 180.0;
+        double result_T[16];
+
+        tcp_rotate("Y", -radians, result_T);
+
+        std::array<double, 16> move_T;
+        std::copy(begin(result_T), end(result_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+void MainWindow::btn_ry_p_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        double radians = ui->spinBox_ry->value() * M_PI / 180.0;
+        double result_T[16];
+
+        tcp_rotate("Y", radians, result_T);
+
+        std::array<double, 16> move_T;
+        std::copy(begin(result_T), end(result_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+void MainWindow::btn_rz_m_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        double radians = ui->spinBox_rz->value() * M_PI / 180.0;
+        double result_T[16];
+
+        tcp_rotate("Z", -radians, result_T);
+
+        std::array<double, 16> move_T;
+        std::copy(begin(result_T), end(result_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
+    }
+}
+
+void MainWindow::btn_rz_p_clicked() {
+    if (is_connected && !is_moving) {
+        is_moving.store(true);
+
+        double radians = ui->spinBox_rz->value() * M_PI / 180.0;
+        double result_T[16];
+
+        tcp_rotate("Z", radians, result_T);
+
+        std::array<double, 16> move_T;
+        std::copy(begin(result_T), end(result_T), move_T.begin());
+
+        move_future = QtConcurrent::run([this, move_T]() {
+            robot.SetVelocity(ui->spinBox_velocity->value());
+            robot.movel(0, const_cast<double *>(move_T.data()));
+            robot.WaitMove();
+            is_moving.store(false);
+        });
     }
 }
 
