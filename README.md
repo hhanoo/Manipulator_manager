@@ -122,7 +122,7 @@ make
 ### 1. Dependencies
 
 - TCP/IP socket-based architecture
-- Robot SDK: KETIRobotSDK
+- Robot SDK: KETIRobotSDK ([GitHub](https://github.com/robot-plus-program/ketirobotsdk))
 - Qt 6.7.x GUI framework
 - Eigen 3.x
 - Docker & Docker Compose (for containerized development)
