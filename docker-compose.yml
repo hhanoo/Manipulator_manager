@@ -1,7 +1,7 @@
 services:
-  keti-manipulator-operation: # Service Name
-    image: hhanoo/keti:manipulator-operation # Image Name
-    container_name: KETI_manipulator_operation
+  keti-manipulator-manager: # Service Name
+    image: hhanoo/keti:manipulator-manager # Image Name
+    container_name: KETI_manipulator_manager
     privileged: true # like --privileged (권한 부여)
     network_mode: host # like --network host (호스트 네트워크)
     stdin_open: true # like -i (표준입력 유지)
@@ -15,6 +15,6 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix # like -v (X11 소켓)
       - /dev:/dev # like -v (모든 /dev 전달)
-      - .:/root/workspace/Manipulator_operation # like -v (프로젝트 디렉토리)
+      - .:/root/workspace/Manipulator_manager # like -v (프로젝트 디렉토리)
 
-    working_dir: /root/workspace/Manipulator_operation
+    working_dir: /root/workspace/Manipulator_manager

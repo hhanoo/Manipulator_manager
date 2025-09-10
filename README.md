@@ -1,9 +1,9 @@
-# Manipulator Operation
+# Manipulator Manager
 
 ## 📁 Project Structure
 
 ```
-Manipulator_operation/
+Manipulator_manager/
 ├── build/                          # Build output directory
 │   └── debug/                      # Debug build
 ├── KETIRobotSDK/                   # Robot SDK directory
@@ -17,7 +17,7 @@ Manipulator_operation/
 ├── mainwindow.h / .cpp             # Main window implementation
 ├── mainwindow.ui                   # Qt Designer UI file
 ├── setting_config.h / .cpp         # Configuration management
-├── Manipulator_operation.pro       # Qt project file
+├── manipulator_manager.pro         # Qt project file
 └── README.md                       # Project documentation
 ```
 
@@ -31,7 +31,7 @@ Manipulator_operation/
 #### 1. Pull Docker Image
 
 ```bash
-sudo docker pull hhanoo/keti:manipulator-operation
+sudo docker pull hhanoo/keti:manipulator-manager
 ```
 
 #### 2. Run Docker Container using Docker Compose
@@ -43,18 +43,18 @@ cd ~/POC_SFSC--cert2
 
 > ### Options
 >
-> | Command   | Description                                |
-> | --------- | ------------------------------------------ |
-> | `build`   | 🔨 Build Manipulator Operation Application |
-> | `run`     | 🤖 Run Manipulator Operation GUI           |
-> | -         |                                            |
-> | `start`   | 🟢 Start Docker Container                  |
-> | `stop`    | 🔴 Stop Docker Container                   |
-> | `restart` | 🔄 Restart Docker Container                |
-> | `logs`    | 📋 Check Docker Logs                       |
-> | `status`  | 📊 Check Container Status                  |
-> | `shell`   | 🐚 Access Docker Container (bash shell)    |
-> | `exit`    | ❌ Exit                                    |
+> | Command   | Description                              |
+> | --------- | ---------------------------------------- |
+> | `build`   | 🔨 Build Manipulator manager Application |
+> | `run`     | 🤖 Run Manipulator manager GUI           |
+> | -         |                                          |
+> | `start`   | 🟢 Start Docker Container                |
+> | `stop`    | 🔴 Stop Docker Container                 |
+> | `restart` | 🔄 Restart Docker Container              |
+> | `logs`    | 📋 Check Docker Logs                     |
+> | `status`  | 📊 Check Container Status                |
+> | `shell`   | 🐚 Access Docker Container (bash shell)  |
+> | `exit`    | ❌ Exit                                  |
 
 </details>
 
@@ -89,14 +89,14 @@ cd ~/POC_SFSC--cert2
 
 ```bash
 # Open project file in Qt Creator
-qtcreator Manipulator_operation.pro
+qtcreator Manipulator_manager.pro
 ```
 
 #### 2. Build Application (Manually)
 
 ```bash
 # Build manually
-qmake Manipulator_operation.pro
+qmake Manipulator_manager.pro
 make
 ```
 
@@ -104,7 +104,7 @@ make
 
 ```bash
 # Run manually
-./Manipulator_operation
+./Manipulator_manager
 ```
 
 ## ✨ Main Features

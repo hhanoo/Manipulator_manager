@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# KETI Manipulator Operation Docker 실행 스크립트
+# KETI Manipulator Manager Docker 실행 스크립트
 
 set -e
 
 echo "================================================================="
-echo "KETI Manipulator Operation Docker Launcher (arm64)"
+echo "KETI Manipulator Manager Docker Launcher (arm64)"
 echo "================================================================="
 
 # 색상 정의
@@ -63,18 +63,18 @@ create_directories() {
 
 # 시스템 시작
 start_system() {
-    print_info "KETI Manipulator Operation 시스템 시작 중..."
+    print_info "KETI Manipulator Manager 시스템 시작 중..."
     print_info "X11 지원으로 시작합니다."
     xhost +local:
     $DOCKER_COMPOSE_CMD up -d
-    print_success "KETI Manipulator Operation 시스템 시작 완료"
+    print_success "KETI Manipulator Manager 시스템 시작 완료"
 }
 
 # 시스템 중지
 stop_system() {
-    print_info "KETI Manipulator Operation 시스템 중지 중..."
+    print_info "KETI Manipulator Manager 시스템 중지 중..."
     $DOCKER_COMPOSE_CMD down
-    print_success "KETI Manipulator Operation 시스템 중지 완료"
+    print_success "KETI Manipulator Manager 시스템 중지 완료"
 }
 
 # 로그 확인
@@ -105,20 +105,20 @@ connect_container() {
     print_info "컨테이너 접속 중..."
     
     # 컨테이너가 실행 중인지 확인
-    cid="$($DOCKER_COMPOSE_CMD ps -q keti-manipulator-operation)"
+    cid="$($DOCKER_COMPOSE_CMD ps -q keti-manipulator-manager)"
     if [ -z "$cid" ] || [ "$(docker inspect -f '{{.State.Running}}' "$cid")" != "true" ]; then
-        print_error "KETI Manipulator Operation 시스템이 실행 중이 아닙니다."
+        print_error "KETI Manipulator Manager 시스템이 실행 중이 아닙니다."
         echo "먼저 시스템을 시작하세요: ./docker-run.sh start"
         return 1
     fi
     
-    print_success "KETI Manipulator Operation 컨테이너에 접속합니다."
+    print_success "KETI Manipulator Manager 컨테이너에 접속합니다."
     echo "컨테이너에서 나가려면: exit 또는 Ctrl+D"
     echo "----------------------------------------"
     
     # bash shell로 컨테이너 접속
     xhost +local:
-    $DOCKER_COMPOSE_CMD exec keti-manipulator-operation /bin/bash
+    $DOCKER_COMPOSE_CMD exec keti-manipulator-manager /bin/bash
     
     print_info "컨테이너 접속이 종료되었습니다."
 }
@@ -126,10 +126,10 @@ connect_container() {
 # QT Project Build
 build_qt_project() {
     print_info "QT Project Build 중..."
-    $DOCKER_COMPOSE_CMD exec keti-manipulator-operation bash -c "
+    $DOCKER_COMPOSE_CMD exec keti-manipulator-manager bash -c "
     mkdir -p build && 
     cd build && 
-    /opt/Qt/6.7.0/gcc_64/bin/qmake ../Manipulator_operation.pro && 
+    /opt/Qt/6.7.0/gcc_64/bin/qmake ../Manipulator_manager.pro && 
     bear make
     "
     print_success "QT Project Build 완료"
@@ -138,9 +138,9 @@ build_qt_project() {
 # QT Project Run
 run_qt_project() {
     print_info "QT Project Run 중..."
-    $DOCKER_COMPOSE_CMD exec keti-manipulator-operation bash -c "
+    $DOCKER_COMPOSE_CMD exec keti-manipulator-manager bash -c "
     cd build && 
-    ./Manipulator_operation
+    ./Manipulator_manager
     "
     print_success "QT Project Run 완료"
 }

@@ -5,7 +5,7 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     // ---------------------- UI ------------------------------------
     ui->setupUi(this);
-    this->setWindowTitle("Manipulator Operation");
+    this->setWindowTitle("Manipulator Manager");
 
     // Connect
     connect(ui->btnRobotConnect, &QPushButton::clicked, this, &MainWindow::btnRobotConnect_clicked);
