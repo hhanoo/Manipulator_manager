@@ -31,7 +31,7 @@ Manipulator_manager/
 #### 1. Pull Docker Image
 
 ```bash
-sudo docker pull hhanoo/keti:manipulator-manager
+sudo docker pull hhanoo/project:manipulator-manager
 ```
 
 #### 2. Run Docker Container using Docker Compose
