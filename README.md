@@ -132,13 +132,11 @@ Manipulator_manager/
 ### Option 1: Docker (권장)
 
 ```bash
-# 0. 프로젝트 루트로 이동
+# 1. Docker 이미지 가져오기
+docker pull hhanoo/project:manipulator-manager
+
+# 2. 컨테이너 실행 (X11 포워딩 포함)
 cd Manipulator_manager/docker
-
-# 1. Docker 이미지 빌드
-./build.sh
-
-# 2. 컨테이너 실행
 ./run.sh
 
 # 3. 컨테이너 내에서 빌드 및 실행
@@ -202,11 +200,24 @@ make && ./Manipulator_manager
 ### Method 1: Docker (권장)
 
 ```bash
+# 1. Docker 이미지 가져오기
+docker pull hhanoo/project:manipulator-manager
+
+# 2. 컨테이너 실행
+cd Manipulator_manager/docker
+./run.sh
+```
+
+<details>
+<summary>직접 빌드 (개발자용)</summary>
+
+```bash
 # 0. 프로젝트 루트로 이동
 cd Manipulator_manager/docker
 
-# 1. 설정 파일 생성
+# 1. 설정 파일 생성 후 IMAGE_NAME을 로컬 이름으로 변경
 cp config.sh.example config.sh
+# config.sh에서 IMAGE_NAME="manipulator-manager" 로 수정
 
 # 2. Docker 이미지 빌드
 ./build.sh
@@ -214,6 +225,8 @@ cp config.sh.example config.sh
 # 3. 컨테이너 실행
 ./run.sh
 ```
+
+</details>
 
 ### Method 2: Native
 
@@ -338,12 +351,15 @@ TCP 회전: RX/RY/RZ +/- 버튼으로 TCP 회전 제어
 
 ### Docker 설정
 
-[config.sh.example](docker/config.sh.example)을 `config.sh`로 복사하여 편집합니다.
+[config.sh](docker/config.sh.example)
 
-| 파라미터         | 기본값                | 설명                 |
-| ---------------- | --------------------- | -------------------- |
-| `IMAGE_NAME`     | `manipulator-manager` | Docker 이미지 이름   |
-| `CONTAINER_NAME` | `manipulator-manager` | Docker 컨테이너 이름 |
+```bash
+IMAGE_NAME="hhanoo/project:manipulator-manager"  # Docker Hub 이미지 (기본값)
+CONTAINER_NAME="manipulator-manager"              # Docker 컨테이너 이름
+```
+
+> `run.sh` 실행 전 `docker pull hhanoo/project:manipulator-manager`로 이미지를 가져오세요.  
+> 직접 빌드하려면 `IMAGE_NAME`을 `"manipulator-manager"` 등으로 변경 후 `./build.sh`를 실행하세요.
 
 ### config.ini
 
