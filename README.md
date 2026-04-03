@@ -2,83 +2,42 @@
 
 **Qt 기반 6축 매니퓰레이터 실시간 제어 및 모니터링 GUI 시스템**
 
-[![C++](https://img.shields.io/badge/C++-17-blue)](https://isocpp.org/)
-[![Qt](https://img.shields.io/badge/Qt-6.7-green)](https://www.qt.io/)
-[![License](https://img.shields.io/badge/License-MIT-orange)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-Supported-brightgreen)](docker/)
+[![C++](https://img.shields.io/badge/C++-17-blue?logo=cplusplus&logoColor=white)](https://isocpp.org/)
+[![Qt](https://img.shields.io/badge/Qt-6.7-green?logo=qt&logoColor=white)](https://www.qt.io/)
+[![Docker](https://img.shields.io/badge/Docker-Supported-brightgreen?logo=docker&logoColor=white)](docker/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-orange?logo=opensourceinitiative&logoColor=white)](LICENSE)
+
+---
 
 ## 목차
 
 - [데모](#데모)
 - [개요](#개요)
 - [주요 기능](#주요-기능)
+- [시스템 구조](#시스템-구조)
+- [프로젝트 구조](#프로젝트-구조)
 - [빠른 시작](#빠른-시작)
 - [시스템 요구사항](#시스템-요구사항)
 - [설치](#설치)
+- [빌드](#빌드)
 - [실행](#실행)
 - [사용법](#사용법)
 - [설정](#설정)
+- [API / 인터페이스](#api--인터페이스)
 - [문제 해결](#문제-해결)
 - [라이선스](#라이선스)
+- [Maintainer](#maintainer)
 
 ---
 
 ## 데모
 
-### 시스템 구조
+<details>
+<summary>UI 인터페이스</summary>
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                  Manipulator Manager System               │
-└──────────────────────────────────────────────────────────┘
+![GUI 스크린샷](docs/preview.png)
 
-    6-Axis Manipulator (UR10 등)
-              │
-              │ TCP/IP
-              ▼
-    ┌──────────────────────┐
-    │ KETIRobotSDK         │ (C++)
-    │ - Robot communication│
-    │ - Joint/Pose control │
-    │ - Digital I/O        │
-    └──────────┬───────────┘
-               │ SDK API
-               ▼
-    ┌──────────────────────┐
-    │ Manipulator Manager  │ (C++ / Qt 6)
-    │ - GUI Interface      │
-    │ - Real-time monitor  │
-    │ - Joint/Kinematics   │
-    │ - Digital I/O panel  │
-    └──────────────────────┘
-```
-
-### 프로젝트 구조
-
-```
-Manipulator_manager/
-├── KETIRobotSDK/                  # Robot SDK 라이브러리
-│   ├── librobotsdk.so             # 공유 라이브러리
-│   ├── sdkv2.h                    # SDK 헤더
-│   └── robotconf.h                # 로봇 설정 헤더
-├── docker/                        # Docker 지원
-│   ├── Dockerfile                 # Docker 이미지 빌드 설정
-│   ├── build.sh                   # 이미지 빌드 스크립트
-│   ├── run.sh                     # 컨테이너 실행 스크립트
-│   └── config.sh.example          # 설정 템플릿
-├── docs/                          # 문서
-│   └── preview.png                # GUI 스크린샷
-├── main.cpp                       # 프로그램 진입점
-├── mainwindow.h / .cpp            # 메인 윈도우 구현
-├── mainwindow.ui                  # Qt Designer UI 파일
-├── setting_config.h / .cpp        # 설정 관리
-├── Manipulator_manager.pro        # Qt 프로젝트 파일
-└── README.md                      # 프로젝트 문서
-```
-
-### 스크린샷
-
-![GUI](docs/preview.png)
+</details>
 
 ---
 
@@ -106,14 +65,65 @@ Manipulator Manager는 KETI Robot SDK를 활용하여 6축 산업용 매니퓰�
 
 ## 주요 기능
 
-- **로봇 연결/해제** - TCP/IP 기반 로봇 통신 연결 및 상태 관리
-- **관절 제어** - 6축 관절값 실시간 모니터링 및 MoveJ 제어
-- **기구학 제어** - X/Y/Z 위치 기반 MoveL (직선 이동) 제어
-- **TCP 회전 제어** - RX, RY, RZ 축 +/- 버튼을 통한 TCP 회전
-- **디지털 I/O** - 8채널 디지털 입출력 모니터링 및 제어
-- **실시간 모니터링** - 50ms 주기 상태 업데이트
-- **속도 제어** - 로봇 이동 속도 조절 (1-100%)
-- **설정 저장/로드** - config.ini를 통한 연결 정보 자동 저장
+- **로봇 연결/해제**: TCP/IP 기반 로봇 통신 연결 및 상태 관리
+- **관절 제어**: 6축 관절값 실시간 모니터링 및 MoveJ 제어
+- **기구학 제어**: X/Y/Z 위치 기반 MoveL (직선 이동) 제어
+- **TCP 회전 제어**: RX, RY, RZ 축 +/- 버튼을 통한 TCP 회전
+- **디지털 I/O**: 8채널 디지털 입출력 모니터링 및 제어
+- **실시간 모니터링**: 50ms 주기 상태 업데이트
+- **속도 제어**: 로봇 이동 속도 조절 (1-100%)
+- **설정 저장/로드**: config.ini를 통한 연결 정보 자동 저장
+
+---
+
+## 시스템 구조
+
+```
+    6-Axis Manipulator (UR10, RB10, M1013, Indy7, Hyundai)
+              │
+              │ TCP/IP
+              ▼
+    ┌──────────────────────┐
+    │ KETIRobotSDK         │ (C++)
+    │ - Robot communication│
+    │ - Joint/Pose control │
+    │ - Digital I/O        │
+    └──────────┬───────────┘
+               │ SDK API
+               ▼
+    ┌──────────────────────┐
+    │ Manipulator Manager  │ (C++ / Qt 6)
+    │ - GUI Interface      │
+    │ - Real-time monitor  │
+    │ - Joint/Kinematics   │
+    │ - Digital I/O panel  │
+    └──────────────────────┘
+```
+
+---
+
+## 프로젝트 구조
+
+```
+Manipulator_manager/
+├── KETIRobotSDK/                  # Robot SDK 라이브러리
+│   ├── librobotsdk.so             # 공유 라이브러리
+│   ├── sdkv2.h                    # SDK 헤더
+│   └── robotconf.h                # 로봇 설정 헤더
+├── docker/                        # Docker 지원
+│   ├── Dockerfile                 # Docker 이미지 빌드 설정
+│   ├── build.sh                   # 이미지 빌드 스크립트
+│   ├── run.sh                     # 컨테이너 실행 스크립트
+│   └── config.sh.example          # 설정 템플릿
+├── docs/                          # 문서
+│   └── preview.png                # GUI 스크린샷
+├── main.cpp                       # 프로그램 진입점
+├── mainwindow.h / .cpp            # 메인 윈도우 구현
+├── mainwindow.ui                  # Qt Designer UI 파일
+├── setting_config.h / .cpp        # 설정 관리
+├── Manipulator_manager.pro        # Qt 프로젝트 파일
+└── README.md
+```
 
 ---
 
@@ -122,36 +132,35 @@ Manipulator Manager는 KETI Robot SDK를 활용하여 6축 산업용 매니퓰�
 ### Option 1: Docker (권장)
 
 ```bash
-# 1. 저장소 클론
-git clone <repository-url> ~/Manipulator_manager
-cd ~/Manipulator_manager
+# 0. 프로젝트 루트로 이동
+cd Manipulator_manager/docker
 
-# 2. Docker 이미지 빌드
-cd docker
+# 1. Docker 이미지 빌드
 ./build.sh
 
-# 3. Docker 컨테이너 실행
+# 2. 컨테이너 실행
 ./run.sh
 
-# 4. 컨테이너 내에서 빌드 및 실행
+# 3. 컨테이너 내에서 빌드 및 실행
 cd /root/workspace/Manipulator_manager
 mkdir -p build && cd build
 /opt/Qt/6.7.0/gcc_64/bin/qmake ../Manipulator_manager.pro
-make
-./Manipulator_manager
+make && ./Manipulator_manager
 ```
 
-### Option 2: Native Installation
+### Option 2: Native
 
 ```bash
-# 1. Qt 6.7 설치 후 프로젝트 빌드
-cd ~/Manipulator_manager
+# 0. 프로젝트 루트로 이동
+cd Manipulator_manager
+
+# 1. 의존성 설치
+sudo apt install -y libeigen3-dev libcurl4-openssl-dev libgl-dev
+
+# 2. 빌드 및 실행
 mkdir -p build && cd build
 qmake ../Manipulator_manager.pro
-make
-
-# 2. 실행
-./Manipulator_manager
+make && ./Manipulator_manager
 ```
 
 ---
@@ -160,22 +169,31 @@ make
 
 ### 필수
 
-- **OS**: Ubuntu 22.04 LTS
-- **C++**: C++17 compiler (GCC 9+)
-- **Qt**: 6.7.x
-- **CMake/qmake**: Qt 6 호환 빌드 도구
+| 항목 | 요구사항         |
+| ---- | ---------------- |
+| OS   | Ubuntu 22.04 LTS |
+| 언어 | C++17 (GCC 9+)   |
 
 ### 하드웨어
 
-- **Network**: 로봇과 TCP/IP 통신 가능한 네트워크 환경
-- **Display**: GUI 표시를 위한 X11 디스플레이 (Docker 사용 시 X11 포워딩 필요)
+| 항목    | 사양                                    | 비고                           |
+| ------- | --------------------------------------- | ------------------------------ |
+| Network | 로봇과 TCP/IP 통신 가능한 네트워크 환경 | 유선 이더넷 권장               |
+| Display | X11 디스플레이                          | Docker 사용 시 X11 포워딩 필요 |
 
 ### 소프트웨어 의존성
 
-- **Eigen3** - 선형대수 라이브러리 (`libeigen3-dev`)
-- **libcurl** - HTTP 통신 (`libcurl4-openssl-dev`)
-- **KETIRobotSDK** - KETI 로봇 SDK (프로젝트에 포함)
-- **Docker** - 컨테이너 환경 (선택)
+- Qt 6.7.x
+- libeigen3-dev
+- libcurl4-openssl-dev
+- libgl-dev, libvulkan-dev
+- ninja-build, cmake
+
+### 외부 패키지
+
+| 패키지       | 출처                                                         | 용도                            |
+| ------------ | ------------------------------------------------------------ | ------------------------------- |
+| KETIRobotSDK | [GitHub](https://github.com/robot-plus-program/ketirobotsdk) | 로봇 통신 SDK (프로젝트에 포함) |
 
 ---
 
@@ -183,18 +201,30 @@ make
 
 ### Method 1: Docker (권장)
 
-Docker를 사용하면 모든 의존성이 자동으로 설치됩니다:
-
 ```bash
-cd ~/Manipulator_manager/docker
+# 0. 프로젝트 루트로 이동
+cd Manipulator_manager/docker
+
+# 1. 설정 파일 생성
+cp config.sh.example config.sh
+
+# 2. Docker 이미지 빌드
 ./build.sh
+
+# 3. 컨테이너 실행
+./run.sh
 ```
 
-빌드 완료 후 `./run.sh`로 컨테이너를 실행하면 모든 환경이 준비됩니다.
+### Method 2: Native
 
-### Method 2: Native Installation
+#### 1. 저장소 클론
 
-#### 1. 시스템 의존성 설치
+```bash
+git clone <repository-url>
+cd Manipulator_manager
+```
+
+#### 2. 시스템 의존성 설치
 
 ```bash
 sudo apt update
@@ -208,48 +238,61 @@ sudo apt install -y \
   libcurl4-openssl-dev
 ```
 
-#### 2. Qt 6.7 설치
+#### 3. Qt 6.7 설치
 
 Qt 공식 설치 도구를 사용하거나 `aqt`로 설치:
 
 - [Qt Online Installer](https://www.qt.io/download)
 
-#### 3. 저장소 클론
+---
+
+## 빌드
+
+### 전체 빌드
 
 ```bash
-git clone <repository-url> ~/Manipulator_manager
+mkdir -p build && cd build
+qmake ../Manipulator_manager.pro
+make
+```
+
+### 전체 빌드 (Docker)
+
+```bash
+mkdir -p build && cd build
+/opt/Qt/6.7.0/gcc_64/bin/qmake ../Manipulator_manager.pro
+make
+```
+
+### 클린 빌드
+
+```bash
+cd build
+make clean
+qmake ../Manipulator_manager.pro
+make
 ```
 
 ---
 
 ## 실행
 
+### 전체 시스템 실행
+
+```bash
+cd build
+./Manipulator_manager
+```
+
 ### Docker 실행
 
 ```bash
 # Docker 컨테이너 실행
-cd ~/Manipulator_manager/docker
+cd docker
 ./run.sh
 
-# 컨테이너 내부에서 빌드
-mkdir -p build && cd build
-/opt/Qt/6.7.0/gcc_64/bin/qmake ../Manipulator_manager.pro
-bear make
-
-# 애플리케이션 실행
-./Manipulator_manager
-```
-
-### Native 실행
-
-```bash
-# Qt Creator에서 열기
-qtcreator Manipulator_manager.pro
-
-# 또는 CLI로 빌드 및 실행
-mkdir -p build && cd build
-qmake ../Manipulator_manager.pro
-make
+# 컨테이너 내부에서
+cd /root/workspace/Manipulator_manager/build
 ./Manipulator_manager
 ```
 
@@ -257,48 +300,37 @@ make
 
 ## 사용법
 
-### Basic Workflow
+### 워크플로우
 
-1. **로봇 연결**
+```
+로봇 연결 ───────▶ 상태 모니터링 ─────────▶ 로봇 제어
+  │                  │                    │
+ IP/Port 입력      관절값/TCP 확인      MoveJ/MoveL/I/O
+```
 
-   ```
-   GUI에서 로봇 IP 주소 입력 후 Connect 버튼 클릭
-   연결 성공 시 상태 표시등 변경
-   ```
+### 단계 1: 로봇 연결
 
-2. **관절값 확인**
+```
+GUI에서 로봇 IP 주소와 포트 입력 후 Connect 버튼 클릭
+연결 성공 시 상태 표시 변경 및 제어 버튼 활성화
+```
 
-   ```
-   Current Joint 영역에서 6축 관절값 실시간 확인
-   Print 버튼으로 현재 관절값 출력
-   ```
+### 단계 2: 상태 모니터링
 
-3. **관절 이동 (MoveJ)**
+```
+Current Joint 영역에서 6축 관절값 실시간 확인 (단위: deg)
+TCP [X, Y, Z] 영역에서 TCP 위치 실시간 확인 (단위: mm)
+Print 버튼으로 현재 관절값/변환행렬 콘솔 출력
+```
 
-   ```
-   Target Joint 영역에 목표 관절값 입력
-   Apply 버튼으로 값 적용 후 MoveJ 버튼 클릭
-   ```
+### 단계 3: 로봇 제어
 
-4. **직선 이동 (MoveL)**
-
-   ```
-   Target XYZ 영역에 목표 위치 입력
-   Apply 버튼으로 값 적용 후 MoveL 버튼 클릭
-   ```
-
-5. **TCP 회전**
-
-   ```
-   RX/RY/RZ 축별 +/- 버튼으로 TCP 회전 제어
-   ```
-
-6. **디지털 I/O 제어**
-
-   ```
-   체크박스를 통해 8채널 디지털 출력 On/Off 제어
-   디지털 입력 상태 실시간 모니터링
-   ```
+```
+MoveJ: Target Joint에 목표 관절값 입력 → Apply → MoveJ 클릭
+MoveL: Target TCP에 목표 위치 입력 → Apply → MoveL 클릭
+TCP 회전: RX/RY/RZ +/- 버튼으로 TCP 회전 제어
+디지털 I/O: 체크박스로 8채널 출력 On/Off, 입력 상태 모니터링
+```
 
 ---
 
@@ -306,33 +338,85 @@ make
 
 ### Docker 설정
 
-[docker/config.sh.example](docker/config.sh.example)을 편집하여 Docker 환경을 설정합니다.
-첫 실행 시 `config.sh.example`에서 `config.sh`로 자동 복사됩니다.
+[config.sh.example](docker/config.sh.example)을 `config.sh`로 복사하여 편집합니다.
 
 | 파라미터         | 기본값                | 설명                 |
 | ---------------- | --------------------- | -------------------- |
 | `IMAGE_NAME`     | `manipulator-manager` | Docker 이미지 이름   |
 | `CONTAINER_NAME` | `manipulator-manager` | Docker 컨테이너 이름 |
 
-### 앱 설정
+### config.ini
 
-애플리케이션 설정은 `config.ini` 파일에 자동 저장/로드됩니다.
+애플리케이션 설정은 `build/config.ini`에 자동 저장/로드됩니다.
 
-| 파라미터   | 설명                    |
-| ---------- | ----------------------- |
-| Robot IP   | 로봇 TCP/IP 연결 주소   |
-| Robot Port | 로봇 TCP/IP 연결 포트   |
-| Velocity   | 로봇 이동 속도 (1-100%) |
+```ini
+[General]
+ROBOT_IP=127.0.0.1
+ROBOT_PORT=5005
+ROBOT_VELOCITY=100
+TCP_RX_DEG=10
+TCP_RY_DEG=10
+TCP_RZ_DEG=10
+```
+
+### 주요 파라미터 설명
+
+- **ROBOT_IP**: 로봇 TCP/IP 연결 주소
+- **ROBOT_PORT**: 로봇 TCP/IP 연결 포트
+- **ROBOT_VELOCITY**: 로봇 이동 속도 (1-100%)
+- **TCP_RX/RY/RZ_DEG**: TCP 회전 증분값 (단위: deg)
+
+---
+
+## API / 인터페이스
+
+### SDK API
+
+| 메서드                        | 설명                        |
+| ----------------------------- | --------------------------- |
+| `SetRobotConf(index, ip, port)` | 로봇 연결 설정            |
+| `RobotConnect()`              | 로봇 연결                   |
+| `RobotDisconnect()`           | 로봇 연결 해제              |
+| `RobotInfo()`                 | 현재 상태 조회 (관절, 포즈) |
+| `movej(pnt)`                  | 관절 이동 (MoveJ)           |
+| `movel(ref, pnt)`             | 직선 이동 (MoveL)           |
+| `SetVelocity(v)`              | 이동 속도 설정 (1-100%)     |
+| `Stop()`                      | 긴급 정지                   |
+| `WaitMove()`                  | 이동 완료 대기              |
+| `ControlBoxDigitalOut(out)`   | 디지털 출력 제어 (8bit)     |
+| `ControlBoxDigitalIn()`       | 디지털 입력 조회 (8bit)     |
+
+### 지원 로봇
+
+| 로봇    | 타입 ID | 비고 |
+| ------- | ------- | ---- |
+| UR10    | 2       | 기본 |
+| RB10    | 1       |      |
+| M1013   | 3       |      |
+| Indy7   | 4       |      |
+| Hyundai | 5       |      |
+
+### 네트워크 구성
+
+| 항목     | 값               | 설명                     |
+| -------- | ---------------- | ------------------------ |
+| Protocol | TCP/IP           | 로봇-PC 간 통신 프로토콜 |
+| Port     | 5005 (기본)      | 로봇 SDK 통신 포트       |
+| Docker   | `--network host` | 호스트 네트워크 공유     |
 
 ---
 
 ## 문제 해결
 
-### 1. Docker / GUI 관련
+### 1. Docker 컨테이너에서 GUI가 표시되지 않음
 
-#### 1-1. Problem: Docker 컨테이너에서 GUI가 표시되지 않음
+증상:
 
-**Solution:**
+```
+cannot open display
+```
+
+해결:
 
 ```bash
 # X11 포워딩 활성화 확인
@@ -344,27 +428,30 @@ echo $DISPLAY
 # run.sh가 X11 설정을 자동으로 처리하므로 ./run.sh 사용 권장
 ```
 
-#### 1-2. Problem: "cannot open display" 에러
+### 2. libeigen3-dev not found
 
-**Solution:**
+증상:
 
-- SSH 접속 시 `-X` 옵션으로 X11 포워딩 활성화
-- 로컬 환경에서 `$DISPLAY` 환경변수가 설정되어 있는지 확인
+```
+fatal error: Eigen/Dense: No such file or directory
+```
 
-### 2. 빌드 관련
-
-#### 2-1. Problem: "libeigen3-dev not found"
-
-**Solution:**
+해결:
 
 ```bash
 sudo apt update
 sudo apt install -y libeigen3-dev
 ```
 
-#### 2-2. Problem: Qt 라이브러리를 찾지 못함
+### 3. Qt 라이브러리를 찾지 못함
 
-**Solution:**
+증상:
+
+```
+qmake: command not found
+```
+
+해결:
 
 ```bash
 # Qt 설치 경로 확인
@@ -374,30 +461,37 @@ ls /opt/Qt/
 /opt/Qt/6.7.0/gcc_64/bin/qmake ../Manipulator_manager.pro
 ```
 
-### 3. 로봇 연결 관련
+### 4. 로봇에 연결되지 않음
 
-#### 3-1. Problem: 로봇에 연결되지 않음
+증상:
 
-**Solution:**
+```
+연결 버튼 클릭 후 응답 없음
+```
 
-1. 로봇 전원이 켜져 있고 네트워크에 접근 가능한지 확인
-2. 로봇 IP 주소와 포트가 올바른지 확인
-3. 방화벽 설정 확인
-4. `ping <robot-ip>`로 네트워크 연결 테스트
+해결:
 
-#### 3-2. Problem: Docker 컨테이너에서 로봇 통신 불가
+```bash
+# 1. 로봇 전원 및 네트워크 확인
+ping <robot-ip>
 
-**Solution:**
+# 2. 포트 접근 확인
+nc -zv <robot-ip> 5005
 
-- `run.sh`는 `--network host` 옵션을 사용하므로 호스트와 동일한 네트워크 접근 가능
-- 호스트에서 로봇 통신이 가능한지 먼저 확인
+# 3. 방화벽 설정 확인
+sudo ufw status
+```
 
 ---
 
 ## 라이선스
 
-TBD
+이 프로젝트는 Apache License 2.0 라이선스로 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+> **참고**: `KETIRobotSDK/` 내 바이너리 파일(`.so`, `.a`)은 별도의 라이선스 조건이 적용될 수 있습니다.
 
 ---
 
-**Maintainer**: hhanoo (woo980711@gmail.com)
+## Maintainer
+
+hhanoo (woo980711@gmail.com)
